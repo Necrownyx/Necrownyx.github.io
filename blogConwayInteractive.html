@@ -1,0 +1,170 @@
+
+<!DOCTYPE html>
+
+<html>
+  <title>Conway's Soldiers interactive game</title>
+  
+<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive game to demonstrate Conway's Soldiers. This animation, written in JavaScript, allows you 
+  to play Conway's Soldiers and see how close you can get to that elusive fifth row.">
+  <link rel="stylesheet" href="../css/w3a.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+  <link rel="stylesheet" href="../../cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+  <style>p {font-family: "Lato", sans-serif} {font-size:200px}</style>
+
+  <body>
+    <!-- Navbar -->
+	 
+
+	<div class='w3-top'>
+      <ul class='w3-navbar w3-teal w3-card-2 w3-left-align w3-large'>
+        <li class='w3-hide-large w3-opennav w3-right'>
+          <a class='w3-padding-large w3-hover-white w3-large w3-teal' href='javascript:void(0);' onclick='toggleNavbar()' title='Toggle Navigation Menu'>
+            <i class='fa fa-bars'></i></a>
+      </div>
+    </div>
+		 <p></p>
+	<div class="w3-row-padding w3-padding-32asym w3-container">
+		<canvas id="myCanvas" onmousedown="gridClicked(event)" width="1000" height="300">Sorry - your browser doesn't support HTML5 canvas
+		</canvas>
+		<div id = "message"></div>
+	</div>
+
+
+  <div class="w3-container w3-white" style="user-select:none">
+	<h3>Instructions</h3>
+	<p>Your task is to move a tile to the top row (five rows up from where the top row of tiles started). Dark squares are tiles and light squares are empty cells.</p>
+	<p>You move a tile by selecting one (it turns red) and then jumping over another tile by clicking on an empty cell two spaces away.</p>
+	<p>You can't move diagonally. When you move a tile, the one that you jumped over is removed.</p>
+	<p>To de-select the red tile, click on it again.</p>
+	<p>Don't spend too long trying to reach that top row!</p>
+	</div>
+</body>
+<html>
+
+<script>
+	// Conway's Soldiers script
+	
+	// Shows interactive grid according to rules of Conway's Soldiers
+	
+	// By Mark Bensilum, Clever Learning
+	// 20 June 2019
+	
+	// Set up variables
+	var xMax = 200;
+	var yMax = 100;
+	var boxSize = 10;
+	var selected = false;
+	var selectedX, selectedY;
+	var cells = new Array(xMax);
+	for (i = 0; i < xMax; i++) {
+	  cells[i] = new Array(yMax);
+	}
+
+	initialiseGrid();
+	drawGrid();
+	
+	function initialiseGrid() {
+	// Set up array with initial values
+	// 0=empty cell, 1=cell with tile, 2=selected cell
+
+	for (j = 0; j < yMax; j++) {
+	  for (i = 0; i < xMax; i++) {
+		 if (j > 4) {
+			cells[i][j] = 1;
+			}
+			else {
+			cells[i][j] = 0}
+			}
+	  }	
+	}
+	
+	function drawGrid() {
+		// Draw grid on canvas according to values in array
+		
+		var c = document.getElementById("myCanvas");
+		var ctx = c.getContext("2d");
+
+
+		for (y = 0; y < yMax; y++) {
+		  for (x = 0; x < xMax; x++) {
+				switch(cells[x][y]){
+					case 0:
+						ctx.fillStyle = "#D3D3D3";
+						break;
+					case 1:
+						ctx.fillStyle = "#A9A9A9";
+						break;
+					case 2:
+						ctx.fillStyle = "#FF0000";
+				}
+			 ctx.fillRect(x * boxSize, y * boxSize, boxSize - 2, boxSize - 2);
+		  }
+		}
+		
+		if(selected) {
+			document.getElementById("message").innerHTML = "Now click on an empty cell (light grey) 2 spaces away with a tile in between"
+		}	
+		else {
+			document.getElementById("message").innerHTML = "Click on a tile (dark grey)"			
+		}
+	}
+	
+	function gridClicked(event) {
+		// Canvas clicked by user
+		// Check status of clicked cell and update array
+		
+		var container = myCanvas.getBoundingClientRect();
+		
+		var xCoord = event.clientX;
+		var yCoord = event.clientY;
+	
+		var x = parseInt((xCoord - container.left) / boxSize);
+		var y = parseInt((yCoord - container.top) / boxSize);
+		
+		
+		if (x >= xMax || y >= yMax) {
+			return 0;
+		}
+		
+		switch(cells[x][y]) {
+			case 0:
+				if (selected) {
+					// Tile is selected and empty cell just clicked
+					// Check cell just clicked is exactly two places away (not diagonal)
+					if ((y == selectedY && Math.abs(x - selectedX) == 2) || ((x == selectedX && Math.abs(y - selectedY) == 2))) {
+						// Check cell between this and previously selected one has tile on it
+						if (cells[(x + selectedX) / 2][(y + selectedY) / 2] == 1) {
+							// Move selected tile and remove jumped tile
+							cells[x][y] = 1;
+							cells[selectedX][selectedY] = 0;
+							cells[(x + selectedX) / 2][(y + selectedY) / 2] = 0;
+							selected = false;
+						}
+					}
+				}
+				break;
+			case 1:
+				// New cell selected
+				if (!selected) {
+					cells[x][y] = 2;
+					selected = true;
+					selectedX = x;
+					selectedY = y;
+				}
+				break;
+			case 2:
+				// Selected cell clicked - deselect it
+				cells[x][y] = 1;
+				selected = false;
+				break;
+		}
+
+		drawGrid();
+	}
+</script>
+
+<script src="../functions.js"></script>
+
+</html>
